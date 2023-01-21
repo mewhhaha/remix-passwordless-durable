@@ -33,12 +33,13 @@ export default function ForgotPassword() {
           placeholder="username"
         />
       </div>
-      <div className="text-red-500">
-        {result?.success === false && result.message}
-      </div>
-      <div className="text-black">
-        {result?.success === true && result.message}
-      </div>
+
+      {result?.success === false && (
+        <div className="text-red-500">{result.message}</div>
+      )}
+      {result?.success === true && (
+        <div className="text-black">{result.message}</div>
+      )}
       <Button htmlType="submit" className="bg-orange-400 text-white">
         Send email
       </Button>

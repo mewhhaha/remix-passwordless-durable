@@ -42,7 +42,7 @@ export async function action({ request, context }: ActionArgs) {
 
 export default function Login() {
   const clientConfig = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const reult = useActionData<typeof action>();
 
   const submit = useSubmit();
 
@@ -70,9 +70,11 @@ export default function Login() {
           placeholder="username"
         />
       </div>
-      <div className="text-red-500">
-        {actionData?.success === false && actionData.message}
-      </div>
+
+      {reult?.success === false && (
+        <div className="text-red-500">{reult.message}</div>
+      )}
+
       <Button htmlType="submit" className="bg-orange-400 text-white">
         Login
       </Button>

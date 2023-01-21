@@ -23,6 +23,8 @@ export class DurableObjectUser implements DurableObject {
   async fetch(request: Request) {
     const { storage } = this;
     const url = new URL(request.url);
+
+    console.log("AM I EVEN GETTING HERE?", url.pathname);
     switch (url.pathname) {
       case "/register": {
         const r = await storage.get<UserRegister>("register");
@@ -43,6 +45,7 @@ export class DurableObjectUser implements DurableObject {
 
       case "/forgot_password": {
         const data = await storage.get<UserData>("email");
+        console.log("HELLO THERE");
         if (data === undefined) {
           return forbidden();
         }
@@ -53,15 +56,24 @@ export class DurableObjectUser implements DurableObject {
         const expiresAt = new Date(now.getTime() + HOUR_IN_MILLISECONDS);
         storage.put("register", { secret, expiresAt });
 
-        await fetch("https://api.mailchannels.net/tx/v1/send", {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(generateEmail(data.email, link)),
-        });
+        const response = await fetch(
+          "https://api.mailchannels.net/tx/v1/send",
+          {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(generateEmail(data.email, link)),
+          }
+        );
 
-        return ok();
+        console.log("TEXT", await response.text(), response.status);
+
+        if (response.ok) {
+          return ok();
+        }
+
+        return forbidden();
       }
 
       case "/set": {
