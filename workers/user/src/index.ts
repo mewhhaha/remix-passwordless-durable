@@ -1,9 +1,12 @@
 const HOUR_IN_MILLISECONDS = 3600000;
+const KEY_DATA = "data";
+const KEY_REGISTER = "register";
+const KEY_VERIFIED = "verified";
 
 export type UserData = {
-  token: string;
   email: string;
   username: string;
+  displayname: string;
 };
 
 export type UserRegister = {
@@ -24,10 +27,15 @@ export class DurableObjectUser implements DurableObject {
     const { storage } = this;
     const url = new URL(request.url);
 
-    console.log("AM I EVEN GETTING HERE?", url.pathname);
     switch (url.pathname) {
+      case "/verified": {
+        const verified = await storage.get<boolean>(KEY_VERIFIED);
+
+        return json({ verified: verified === true });
+      }
+
       case "/register": {
-        const r = await storage.get<UserRegister>("register");
+        const r = await storage.get<UserRegister>(KEY_REGISTER);
         if (r === undefined) {
           return forbidden();
         }
@@ -38,14 +46,14 @@ export class DurableObjectUser implements DurableObject {
           return forbidden();
         }
 
-        await storage.delete("register");
-        const data = await storage.get("data");
+        await storage.delete(KEY_REGISTER);
+        await storage.put(KEY_VERIFIED, true);
+        const data = await storage.get(KEY_DATA);
         return json(data);
       }
 
-      case "/forgot_password": {
-        const data = await storage.get<UserData>("email");
-        console.log("HELLO THERE");
+      case "/forgot-password": {
+        const data = await storage.get<UserData>(KEY_DATA);
         if (data === undefined) {
           return forbidden();
         }
@@ -54,7 +62,7 @@ export class DurableObjectUser implements DurableObject {
 
         const now = new Date();
         const expiresAt = new Date(now.getTime() + HOUR_IN_MILLISECONDS);
-        storage.put("register", { secret, expiresAt });
+        storage.put(KEY_REGISTER, { secret, expiresAt });
 
         const response = await fetch(
           "https://api.mailchannels.net/tx/v1/send",
@@ -63,11 +71,9 @@ export class DurableObjectUser implements DurableObject {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(generateEmail(data.email, link)),
+            body: JSON.stringify(generateEmail(data.email, link, expiresAt)),
           }
         );
-
-        console.log("TEXT", await response.text(), response.status);
 
         if (response.ok) {
           return ok();
@@ -78,8 +84,12 @@ export class DurableObjectUser implements DurableObject {
 
       case "/set": {
         const data = await request.json<UserData>();
-        await storage.put("data", data);
-        await storage.delete("register");
+        await Promise.all([
+          storage.put(KEY_DATA, data),
+          storage.put(KEY_VERIFIED, false),
+          storage.delete(KEY_REGISTER),
+        ]);
+
         return ok();
       }
     }
@@ -109,26 +119,30 @@ const generateLink = (username: string, origin: string) => {
   );
   const url = new URL(origin);
 
-  url.pathname = `/register/${username}?s=${secret}`;
+  url.pathname = `/register/${username}`;
+  url.searchParams.set("s", secret);
   return { link: url.toString(), secret };
 };
 
-const generateEmail = (email: string, link: string) => {
+const generateEmail = (email: string, link: string, expiresAt: Date) => {
   return {
     personalizations: [
       {
-        to: [{ email }],
+        to: [{ email, name: "Human" }],
       },
     ],
     from: {
-      email: "no-reply@example.com",
+      email: "no-reply@jkot.me",
       name: "remix-passwordless-durable",
+    },
+    headers: {
+      Date: new Date().toDateString(),
     },
     subject: "Set up passwordless login",
     content: [
       {
         type: "text/html",
-        value: `Set up passwordless login for your device <a href="${link}" target="_blank">here</a>`,
+        value: `Set up passwordless login for your device <a href="${link}" target="_blank">here</a>. It expires at ${expiresAt.toLocaleTimeString()}.`,
       },
     ],
   };

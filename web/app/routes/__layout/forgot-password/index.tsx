@@ -15,7 +15,9 @@ export async function action({ request, context }: ActionArgs) {
 
   await stub.fetch(`${url.origin}/forgot-password`);
 
-  return success({ message: "An email has been sent to this user's address" });
+  return success({
+    message: "An email has been sent to this user's address",
+  });
 }
 
 export default function ForgotPassword() {

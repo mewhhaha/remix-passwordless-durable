@@ -18,48 +18,52 @@ export async function action({ request, context }: ActionArgs) {
   const id = context.DO_USER.idFromName(username);
   const stub = context.DO_USER.get(id);
 
+  const { verified }: { verified: boolean } = await stub
+    .fetch(`${url.origin}/verified`)
+    .then((r) => r.json());
+
+  if (verified) {
+    return failure({
+      message: "Ooops! User is already signed up!",
+    });
+  }
+
   const payload = {
-    userId: id,
+    userId: id.toString(),
     username,
     displayname,
     aliases: [username, email],
   };
 
-  try {
-    const response = await fetch(`${context.AUTH_API}/register/token`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        ApiSecret: context.AUTH_SECRET,
-        "Content-Type": "application/json",
-      },
+  const response = await fetch(`${context.AUTH_API}/register/token`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: {
+      ApiSecret: context.AUTH_SECRET,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (response.status == 409) {
+    return failure({
+      message:
+        "Ooops! Alias is already in use by another user. Please choose a unique alias",
     });
-
-    if (response.status == 409) {
-      return failure({
-        message:
-          "Ooops! Alias is already in use by another user. Please choose a unique alias",
-      });
-    }
-    const token = await response.text();
-
-    const data: UserData = {
-      email,
-      username,
-      token,
-    };
-
-    await stub.fetch(`${url.origin}/set`, {
-      method: "post",
-      body: JSON.stringify(data),
-    });
-    await stub.fetch(`${url.origin}/forgot-password`);
-
-    return success({ username, email });
-  } catch (err) {
-    if (err instanceof Error) return failure({ message: err.message });
-    return failure({ message: "" });
   }
+
+  const data: UserData = {
+    email,
+    username,
+    displayname,
+  };
+
+  await stub.fetch(`${url.origin}/set`, {
+    method: "post",
+    body: JSON.stringify(data),
+  });
+  await stub.fetch(`${url.origin}/forgot-password`);
+
+  return success({ username, email });
 }
 
 export default function SignUp() {
