@@ -72,9 +72,22 @@ export default function SignUp() {
   ) : (
     <Form method="post" className="flex flex-col gap-4">
       <div className="flex flex-col">
+        <label>Email</label>
+        <input
+          required
+          name="email"
+          type="email"
+          autoComplete="email"
+          className="border px-2 py-1 rounded-md"
+          placeholder="email@com"
+        />
+      </div>
+
+      <div className="flex flex-col">
         <label>Username</label>
         <input
           required
+          autoComplete="username"
           name="username"
           className="border px-2 py-1 rounded-md"
           placeholder="username"
@@ -86,6 +99,7 @@ export default function SignUp() {
         <input
           required
           name="displayname"
+          autoComplete="nickname"
           className="border px-2 py-1 rounded-md"
           placeholder="displayname"
         />
