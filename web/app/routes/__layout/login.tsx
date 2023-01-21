@@ -1,39 +1,35 @@
 import { Client } from "@passwordlessdev/passwordless-client";
 import { Button } from "~/components/Button";
 import { cookieSession, verify } from "~/helpers/auth";
-import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
-import type {
-  ActionArgs,
-  LoaderArgs,
-  TypedResponse,
-} from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
+import {
+  Link,
+  useActionData,
+  useLoaderData,
+  useSubmit,
+} from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/cloudflare";
+import { failure, success } from "~/helpers/result";
 
 export async function loader({ context }: LoaderArgs) {
   return { apiKey: context.AUTH_PUBLIC, apiUrl: context.AUTH_API };
 }
 
-export async function action({
-  request,
-  context,
-}: ActionArgs): Promise<
-  TypedResponse<{ success: false; message: string } | { success: true }>
-> {
+export async function action({ request, context }: ActionArgs) {
   const { session, commitSession } = await cookieSession(request, context);
 
   const formData = await request.formData();
   const token = formData.get("token")?.toString();
 
   if (!token) {
-    return json({ success: false, message: "Missing form data" });
+    return failure({ message: "Missing form data" });
   }
 
   const body = await verify(token, context);
 
   if (body.success) {
     session.set("user", JSON.stringify(body));
-    return json(
-      { success: true as const },
+    return success(
+      {},
       {
         status: 302,
         headers: { "Set-Cookie": await commitSession(session), Location: "/" },
@@ -41,7 +37,7 @@ export async function action({
     );
   }
 
-  return json({ success: false, message: "Login was not successful" });
+  return failure({ message: "Login was not successful" });
 }
 
 export default function Login() {
@@ -78,6 +74,9 @@ export default function Login() {
       </div>
       <Button htmlType="submit" className="bg-orange-400 text-white">
         Login
+      </Button>
+      <Button as={Link} to="/forgot-password">
+        New device
       </Button>
     </form>
   );

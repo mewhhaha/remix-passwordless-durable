@@ -9,5 +9,6 @@ declare module "@remix-run/cloudflare" {
     AUTH_PUBLIC: string;
     AUTH_API: string;
     AUTH_COOKIE_SECRET: string;
+    DO_USER: DurableObjectNamespace;
   }
 }
