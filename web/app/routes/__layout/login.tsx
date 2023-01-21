@@ -65,6 +65,7 @@ export default function Login() {
         <input
           required
           name="username"
+          autoComplete="username"
           className="border px-2 py-1 rounded-md"
           placeholder="username"
         />
