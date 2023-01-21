@@ -15,7 +15,10 @@ export async function loader({ context, request, params }: LoaderArgs) {
   const id = context.DO_USER.idFromName(username);
   const stub = context.DO_USER.get(id);
 
-  const response = await stub.fetch(`${url.origin}/register`, { body: secret });
+  const response = await stub.fetch(`${url.origin}/register`, {
+    body: secret,
+    method: "post",
+  });
   if (!response.ok) {
     return failure({ message: "This link is invalid or expired" });
   }

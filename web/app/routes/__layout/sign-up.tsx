@@ -50,6 +50,7 @@ export async function action({ request, context }: ActionArgs) {
     };
 
     await stub.fetch(`${url.origin}/set`, {
+      method: "post",
       body: JSON.stringify(data),
     });
     await stub.fetch(`${url.origin}/forgot-password`);
