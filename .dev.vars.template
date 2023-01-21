@@ -1,0 +1,5 @@
+# Copy to .dev.vars with fields filled
+AUTH_PUBLIC=
+AUTH_API=
+AUTH_SECRET=
+AUTH_COOKIE_SECRET=
