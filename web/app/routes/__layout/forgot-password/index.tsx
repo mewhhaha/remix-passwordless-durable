@@ -2,18 +2,18 @@ import { Button } from "~/components/Button";
 import { Form, useActionData } from "@remix-run/react";
 import type { ActionArgs } from "@remix-run/cloudflare";
 import { failure, success } from "~/helpers/result";
+import { client } from "dumbo-rpc";
 
 export async function action({ request, context }: ActionArgs) {
-  const url = new URL(request.url);
   const formData = await request.formData();
   const username = formData.get("username")?.toString();
   if (!username) {
     return failure({ message: "Missing form data" });
   }
-  const id = context.DO_USER.idFromName(username);
-  const stub = context.DO_USER.get(id);
 
-  await stub.fetch(`${url.origin}/forgot-password`);
+  const c = client(request, context.DO_USER, username);
+
+  await c.forgotPassword();
 
   return success({
     message: "An email has been sent to this user's address",

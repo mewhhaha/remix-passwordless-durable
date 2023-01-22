@@ -3,9 +3,9 @@ import { Form, useActionData } from "@remix-run/react";
 import { Button } from "~/components/Button";
 import type { UserData } from "user";
 import { failure, success } from "~/helpers/result";
+import { client } from "dumbo-rpc";
 
 export async function action({ request, context }: ActionArgs) {
-  const url = new URL(request.url);
   const formData = await request.formData();
   const email = formData.get("email")?.toString();
   const username = formData.get("username")?.toString();
@@ -15,13 +15,8 @@ export async function action({ request, context }: ActionArgs) {
     return failure({ message: "Missing form data" });
   }
 
-  const id = context.DO_USER.idFromName(username);
-  const stub = context.DO_USER.get(id);
-
-  const { verified }: { verified: boolean } = await stub
-    .fetch(`${url.origin}/verified`)
-    .then((r) => r.json());
-
+  const c = client(request, context.DO_USER, username);
+  const { value: verified } = await c.verified();
   if (verified) {
     return failure({
       message: "Ooops! User is already signed up!",
@@ -29,7 +24,7 @@ export async function action({ request, context }: ActionArgs) {
   }
 
   const payload = {
-    userId: id.toString(),
+    userId: c.stub.id.toString(),
     username,
     displayname,
     aliases: [username, email],
@@ -57,11 +52,8 @@ export async function action({ request, context }: ActionArgs) {
     displayname,
   };
 
-  await stub.fetch(`${url.origin}/set`, {
-    method: "post",
-    body: JSON.stringify(data),
-  });
-  await stub.fetch(`${url.origin}/forgot-password`);
+  await c.initialize(data);
+  await c.forgotPassword();
 
   return success({ username, email });
 }

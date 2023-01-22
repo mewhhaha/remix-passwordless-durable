@@ -24,10 +24,10 @@ export async function action({ request, context }: ActionArgs) {
     return failure({ message: "Missing form data" });
   }
 
-  const body = await verify(token, context);
+  const result = await verify(token, context);
 
-  if (body.success) {
-    session.set("user", JSON.stringify(body));
+  if (result.success) {
+    session.set("user", JSON.stringify(result));
     return success(
       {},
       {
@@ -42,7 +42,7 @@ export async function action({ request, context }: ActionArgs) {
 
 export default function Login() {
   const clientConfig = useLoaderData<typeof loader>();
-  const reult = useActionData<typeof action>();
+  const result = useActionData<typeof action>();
 
   const submit = useSubmit();
 
@@ -71,8 +71,8 @@ export default function Login() {
         />
       </div>
 
-      {reult?.success === false && (
-        <div className="text-red-500">{reult.message}</div>
+      {result?.success === false && (
+        <div className="text-red-500">{result.message}</div>
       )}
 
       <Button htmlType="submit" className="bg-orange-400 text-white">
