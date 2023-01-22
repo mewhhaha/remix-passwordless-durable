@@ -2,7 +2,7 @@ import { Button } from "~/components/Button";
 import { Form, useActionData } from "@remix-run/react";
 import type { ActionArgs } from "@remix-run/cloudflare";
 import { failure, success } from "~/helpers/result";
-import { client } from "dumbo-rpc";
+import { client } from "dumb-durable-object";
 
 export async function action({ request, context }: ActionArgs) {
   const formData = await request.formData();

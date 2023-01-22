@@ -3,7 +3,7 @@ import { Form, useActionData } from "@remix-run/react";
 import { Button } from "~/components/Button";
 import type { UserData } from "user";
 import { failure, success } from "~/helpers/result";
-import { client } from "dumbo-rpc";
+import { client } from "dumb-durable-object";
 
 export async function action({ request, context }: ActionArgs) {
   const formData = await request.formData();

@@ -4,7 +4,7 @@ import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import invariant from "invariant";
 import { failure, success } from "~/helpers/result";
-import { client } from "dumbo-rpc";
+import { client } from "dumb-durable-object";
 
 export async function loader({ context, request, params }: LoaderArgs) {
   const url = new URL(request.url);

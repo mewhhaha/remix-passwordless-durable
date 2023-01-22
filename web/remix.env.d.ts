@@ -3,7 +3,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import "@remix-run/cloudflare";
-import type { DurableObjectNamespaceIs } from "dumbo-rpc";
+import type { DurableObjectNamespaceIs } from "dumb-durable-object";
 import type { DurableObjectUser } from "user";
 declare module "@remix-run/cloudflare" {
   interface AppLoadContext {

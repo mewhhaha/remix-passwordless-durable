@@ -7,8 +7,10 @@ importers:
 
   packages/durable-object-rpc:
     specifiers:
+      '@cloudflare/workers-types': ^4.20221111.1
       typescript: ^4.9.4
     devDependencies:
+      '@cloudflare/workers-types': 4.20221111.1
       typescript: 4.9.4
 
   web:
@@ -24,7 +26,7 @@ importers:
       '@types/react': ^18.0.25
       '@types/react-dom': ^18.0.8
       cross-env: ^7.0.3
-      dumbo-rpc: workspace:^0.0.1
+      dumb-durable-object: ^0.0.1
       eslint: ^8.27.0
       invariant: ^2.2.4
       npm-run-all: ^4.1.5
@@ -38,7 +40,6 @@ importers:
       '@remix-run/cloudflare-pages': 1.11.1_pppzqxbuosu2y42d4woz36b4ke
       '@remix-run/react': 1.11.1_biqbaboplfbrettd7655fr4n2y
       cross-env: 7.0.3
-      dumbo-rpc: link:../packages/durable-object-rpc
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -49,6 +50,7 @@ importers:
       '@types/invariant': 2.2.35
       '@types/react': 18.0.27
       '@types/react-dom': 18.0.10
+      dumb-durable-object: 0.0.1
       eslint: 8.32.0
       invariant: 2.2.4
       npm-run-all: 4.1.5
@@ -60,14 +62,13 @@ importers:
     specifiers:
       '@cloudflare/workers-types': ^4.20221111.1
       '@miniflare/tre': 3.0.0-next.1
-      dumbo-rpc: workspace:^0.0.1
+      dumb-durable-object: ^0.0.1
       typescript: ^4.9.4
       wrangler: ^2.8.0
-    dependencies:
-      dumbo-rpc: link:../../packages/durable-object-rpc
     devDependencies:
       '@cloudflare/workers-types': 4.20221111.1
       '@miniflare/tre': 3.0.0-next.1
+      dumb-durable-object: 0.0.1
       typescript: 4.9.4
       wrangler: 2.8.0
 
@@ -3539,6 +3540,10 @@ packages:
   /dotenv/16.0.3:
     resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
     engines: {node: '>=12'}
+    dev: true
+
+  /dumb-durable-object/0.0.1:
+    resolution: {integrity: sha512-Q/AUFregdrKcL5xZIYraDkE+9HNEf6TGPn0/WbWYwuUoXNcbEjvJsJVKyJoxCwz5sgfwaPnK7RmqSf//AaYtmg==}
     dev: true
 
   /duplexify/3.7.1:

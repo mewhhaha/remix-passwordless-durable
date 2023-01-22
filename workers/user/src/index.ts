@@ -1,4 +1,4 @@
-import { CallableDurableObject, error, respond } from "dumbo-rpc";
+import { CallableDurableObject, error, respond } from "dumb-durable-object";
 
 const HOUR_IN_MILLISECONDS = 3600000;
 const KEY_DATA = "data";
@@ -59,7 +59,7 @@ export class DurableObjectUser extends CallableDurableObject {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(generateEmail(data.email, link, expiresAt)),
+      body: JSON.stringify(generateEmail(data.email, link)),
     });
 
     if (!response.ok) {
@@ -98,7 +98,7 @@ const generateLink = (username: string, origin: string) => {
   return { link: url.toString(), secret };
 };
 
-const generateEmail = (email: string, link: string, expiresAt: Date) => {
+const generateEmail = (email: string, link: string) => {
   return {
     personalizations: [
       {
@@ -116,7 +116,7 @@ const generateEmail = (email: string, link: string, expiresAt: Date) => {
     content: [
       {
         type: "text/html",
-        value: `Set up passwordless login for your device <a href="${link}" target="_blank">here</a>. It expires at ${expiresAt.toLocaleTimeString()}.`,
+        value: `Set up passwordless login for your device <a href="${link}" target="_blank">here</a>. It expires in one hour.`,
       },
     ],
   };
