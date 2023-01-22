@@ -1,18 +1,6 @@
 import type { AppLoadContext } from "@remix-run/cloudflare";
 import { createCookieSessionStorage } from "@remix-run/cloudflare";
-
-export type User = {
-  userId: string;
-  timestamp: string;
-  rpid: string;
-  origin: string;
-  success: boolean;
-  device: string;
-  country: string;
-  nickname: null | string;
-  credentialId: string;
-  expiresAt: string;
-};
+import type { User } from "./passwordless";
 
 export const cookieSession = async (
   request: Request,
@@ -43,19 +31,6 @@ export const getCommitSession = async (
   const session = await getSession(request.headers.get("Cookie"));
 
   return { session, commitSession };
-};
-
-export const verify = async (token: string, context: AppLoadContext) => {
-  const response = await fetch(`${context.AUTH_API}/signin/verify`, {
-    method: "POST",
-    body: JSON.stringify({ token }),
-    headers: {
-      ApiSecret: context.AUTH_SECRET,
-      "Content-Type": "application/json",
-    },
-  });
-
-  return (await response.json()) as User;
 };
 
 export const createContextCookieSessionStorage = (context: AppLoadContext) =>

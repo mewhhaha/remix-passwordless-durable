@@ -1,6 +1,6 @@
 import { Client } from "@passwordlessdev/passwordless-client";
 import { Button } from "~/components/Button";
-import { cookieSession, verify } from "~/helpers/auth";
+import { cookieSession } from "~/helpers/auth";
 import {
   Link,
   useActionData,
@@ -9,6 +9,8 @@ import {
 } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/cloudflare";
 import { failure, success } from "~/helpers/result";
+import { signinVerify } from "~/helpers/passwordless";
+import { readForm } from "~/helpers/form";
 
 export async function loader({ context }: LoaderArgs) {
   return { apiKey: context.AUTH_PUBLIC, apiUrl: context.AUTH_API };
@@ -17,27 +19,24 @@ export async function loader({ context }: LoaderArgs) {
 export async function action({ request, context }: ActionArgs) {
   const { session, commitSession } = await cookieSession(request, context);
 
-  const formData = await request.formData();
-  const token = formData.get("token")?.toString();
-
-  if (!token) {
+  const { error, token } = await readForm(request, ["token"]);
+  if (error) {
     return failure({ message: "Missing form data" });
   }
 
-  const result = await verify(token, context);
-
-  if (result.success) {
-    session.set("user", JSON.stringify(result));
-    return success(
-      {},
-      {
-        status: 302,
-        headers: { "Set-Cookie": await commitSession(session), Location: "/" },
-      }
-    );
+  const result = await signinVerify(context, token);
+  if (!result.success) {
+    return failure({ message: "Login was not successful" });
   }
 
-  return failure({ message: "Login was not successful" });
+  session.set("user", JSON.stringify(result));
+  return success(
+    {},
+    {
+      status: 302,
+      headers: { "Set-Cookie": await commitSession(session), Location: "/" },
+    }
+  );
 }
 
 export default function Login() {
@@ -71,9 +70,7 @@ export default function Login() {
         />
       </div>
 
-      {result?.success === false && (
-        <div className="text-red-500">{result.message}</div>
-      )}
+      {result?.error && <div className="text-red-500">{result.message}</div>}
 
       <Button htmlType="submit" className="bg-orange-400 text-white">
         Login

@@ -4,14 +4,16 @@ import { Button } from "~/components/Button";
 import type { UserData } from "user";
 import { failure, success } from "~/helpers/result";
 import { client } from "dumb-durable-object";
+import { readForm } from "~/helpers/form";
 
 export async function action({ request, context }: ActionArgs) {
-  const formData = await request.formData();
-  const email = formData.get("email")?.toString();
-  const username = formData.get("username")?.toString();
-  const displayname = formData.get("displayname")?.toString();
+  const { error, username, displayname, email } = await readForm(request, [
+    "email",
+    "username",
+    "displayname",
+  ]);
 
-  if (!username || !displayname || !email) {
+  if (error) {
     return failure({ message: "Missing form data" });
   }
 
@@ -20,29 +22,6 @@ export async function action({ request, context }: ActionArgs) {
   if (verified) {
     return failure({
       message: "Ooops! User is already signed up!",
-    });
-  }
-
-  const payload = {
-    userId: c.stub.id.toString(),
-    username,
-    displayname,
-    aliases: [username, email],
-  };
-
-  const response = await fetch(`${context.AUTH_API}/register/token`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      ApiSecret: context.AUTH_SECRET,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (response.status == 409) {
-    return failure({
-      message:
-        "Ooops! Alias is already in use by another user. Please choose a unique alias",
     });
   }
 
@@ -61,12 +40,7 @@ export async function action({ request, context }: ActionArgs) {
 export default function SignUp() {
   const result = useActionData<typeof action>();
 
-  return result?.success ? (
-    <div>
-      An email have been sent to <strong>{result.email}</strong> with a link to
-      set up your credentials
-    </div>
-  ) : (
+  return result === undefined || result.error ? (
     <Form method="post" className="flex flex-col gap-4">
       <div className="flex flex-col">
         <label>Email</label>
@@ -102,11 +76,14 @@ export default function SignUp() {
         />
       </div>
 
-      {result?.success === false && (
-        <div className="text-red-500">{result.message}</div>
-      )}
+      {result?.error && <div className="text-red-500">{result.message}</div>}
 
       <Button className="bg-orange-400 text-white">Sign up</Button>
     </Form>
+  ) : (
+    <div>
+      An email have been sent to <strong>{result.email}</strong> with a link to
+      set up your credentials
+    </div>
   );
 }

@@ -1,10 +1,11 @@
 import { Client } from "@passwordlessdev/passwordless-client";
 import type { LoaderArgs } from "@remix-run/cloudflare";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import invariant from "invariant";
 import { failure, success } from "~/helpers/result";
 import { client } from "dumb-durable-object";
+import { registerToken } from "~/helpers/passwordless";
 
 export async function loader({ context, request, params }: LoaderArgs) {
   const url = new URL(request.url);
@@ -29,14 +30,7 @@ export async function loader({ context, request, params }: LoaderArgs) {
     aliases: [username, email],
   };
 
-  const token = await fetch(`${context.AUTH_API}/register/token`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      ApiSecret: context.AUTH_SECRET,
-      "Content-Type": "application/json",
-    },
-  }).then((r) => r.text());
+  const token = await registerToken(context, payload);
 
   return success({
     apiKey: context.AUTH_PUBLIC,
@@ -50,9 +44,10 @@ export default function Register() {
   const [error, setError] = useState<false | string>(false);
   const result = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+  const submit = useSubmit();
 
   useEffect(() => {
-    if (result?.success !== true) return;
+    if (result?.error) return;
 
     const f = async () => {
       try {
@@ -61,7 +56,7 @@ export default function Register() {
           apiUrl: result.apiUrl,
         });
         await client.register(result.token, result.username);
-        navigate("/");
+        submit({ token: result.token }, { action: "/login", method: "post" });
       } catch (err) {
         invariant(err instanceof Error, "panic");
         setError(err.message);
@@ -69,11 +64,11 @@ export default function Register() {
     };
 
     f();
-  }, [navigate, result]);
+  }, [navigate, result, submit]);
 
   return (
     <div className="text-center">
-      <span>{!result.success && result.message}</span>
+      <span>{result.error && result.message}</span>
       <span>{error}</span>
     </div>
   );

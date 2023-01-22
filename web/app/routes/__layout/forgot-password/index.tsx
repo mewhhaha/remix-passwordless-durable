@@ -3,11 +3,11 @@ import { Form, useActionData } from "@remix-run/react";
 import type { ActionArgs } from "@remix-run/cloudflare";
 import { failure, success } from "~/helpers/result";
 import { client } from "dumb-durable-object";
+import { readForm } from "~/helpers/form";
 
 export async function action({ request, context }: ActionArgs) {
-  const formData = await request.formData();
-  const username = formData.get("username")?.toString();
-  if (!username) {
+  const { error, username } = await readForm(request, ["username"]);
+  if (error) {
     return failure({ message: "Missing form data" });
   }
 
@@ -36,10 +36,10 @@ export default function ForgotPassword() {
         />
       </div>
 
-      {result?.success === false && (
+      {result?.error === true && (
         <div className="text-red-500">{result.message}</div>
       )}
-      {result?.success === true && (
+      {result?.error === false && (
         <div className="text-black">{result.message}</div>
       )}
       <Button htmlType="submit" className="bg-orange-400 text-white">

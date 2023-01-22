@@ -7,7 +7,7 @@ export const success = <T extends Record<any, any>>(
   json(
     {
       ...value,
-      success: true as const,
+      error: false as const,
     },
     init
   );
@@ -19,7 +19,7 @@ export const failure = <T extends Record<any, any>>(
   json(
     {
       ...value,
-      success: false as const,
+      error: true as const,
     },
     init
   );
