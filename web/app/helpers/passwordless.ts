@@ -40,6 +40,24 @@ export const credentialsList = async (
   return response.json<Credential[]>();
 };
 
+type CredentialsDeleteRequest = {
+  CredentialId: string;
+};
+
+export const credentialsDelete = async (
+  context: AppLoadContext,
+  request: CredentialsDeleteRequest
+) => {
+  await fetch(`${context.AUTH_API}/credentials/list`, {
+    method: "POST",
+    body: JSON.stringify(request),
+    headers: {
+      ApiSecret: context.AUTH_SECRET,
+      "Content-Type": "application/json",
+    },
+  });
+};
+
 export type RegisterTokenRequest = {
   userId: string;
   username: string;
