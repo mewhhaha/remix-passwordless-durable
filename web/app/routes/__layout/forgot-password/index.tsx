@@ -31,7 +31,7 @@ export default function ForgotPassword() {
           required
           name="username"
           autoComplete="username"
-          className="border px-2 py-1 rounded-md"
+          className="rounded-md border px-2 py-1"
           placeholder="username"
         />
       </div>

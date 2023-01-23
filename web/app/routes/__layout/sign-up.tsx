@@ -49,7 +49,7 @@ export default function SignUp() {
           name="email"
           type="email"
           autoComplete="email"
-          className="border px-2 py-1 rounded-md"
+          className="rounded-md border px-2 py-1"
           placeholder="email@com"
         />
       </div>
@@ -60,7 +60,7 @@ export default function SignUp() {
           required
           autoComplete="username"
           name="username"
-          className="border px-2 py-1 rounded-md"
+          className="rounded-md border px-2 py-1"
           placeholder="username"
         />
       </div>
@@ -71,7 +71,7 @@ export default function SignUp() {
           required
           name="displayname"
           autoComplete="nickname"
-          className="border px-2 py-1 rounded-md"
+          className="rounded-md border px-2 py-1"
           placeholder="displayname"
         />
       </div>
