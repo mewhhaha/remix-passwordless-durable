@@ -21,7 +21,7 @@ export default function Layout() {
       <header className="relative h-16 w-full border-b pt-1">
         <div className="mb-1 text-center text-xl">
           <a
-            href="https://github.com/mewhhaha/remix-passwordless"
+            href="https://github.com/mewhhaha/remix-passwordless-durable"
             className="absolute left-[1rem] top-[0.5rem]"
           >
             <svg
