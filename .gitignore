@@ -7,3 +7,6 @@ web/public/build
 .dev.vars
 
 dist
+
+.wrangler
+.vscode

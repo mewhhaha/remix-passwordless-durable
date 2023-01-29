@@ -3,7 +3,7 @@ import type { LoaderArgs } from "@remix-run/cloudflare";
 import { useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import invariant from "invariant";
-import { failure, success } from "~/helpers/result";
+import { bad, good } from "~/helpers/result";
 import { client } from "dumb-durable-object";
 import { registerToken } from "~/helpers/passwordless";
 
@@ -16,23 +16,26 @@ export async function loader({ context, request, params }: LoaderArgs) {
 
   const c = client(request, context.DO_USER, username);
 
-  const result = await c.register(secret);
+  const [credentials, error] = await c.register(secret);
 
-  if (result.error) {
-    return failure({ message: "This link is invalid or expired" });
+  if (error) {
+    console.error(error.value, error.status);
+    return bad({ message: "This link is invalid or expired" });
   }
-  const { email, displayname } = result.value;
 
   const payload = {
     userId: c.stub.id.toString(),
     username,
-    displayname,
-    aliases: [username, email],
+    displayname: credentials.displayname,
+    aliases: [username, credentials.email],
   };
 
-  const token = await registerToken(context, payload);
+  const [token, err] = await registerToken(context, payload);
+  if (err) {
+    return bad({ message: "This email or username is already taken" });
+  }
 
-  return success({
+  return good({
     apiKey: context.AUTH_PUBLIC,
     apiUrl: context.AUTH_API,
     token,
@@ -41,22 +44,27 @@ export async function loader({ context, request, params }: LoaderArgs) {
 }
 
 export default function Register() {
-  const [error, setError] = useState<false | string>(false);
-  const result = useLoaderData<typeof loader>();
+  const [config, loaderError] = useLoaderData<typeof loader>();
+  const [error, setError] = useState<false | string>(
+    loaderError !== null ? loaderError.message : false
+  );
   const navigate = useNavigate();
   const submit = useSubmit();
 
   useEffect(() => {
-    if (result?.error) return;
+    if (loaderError !== null) return;
 
     const f = async () => {
       try {
         const client = new Client({
-          apiKey: result.apiKey,
-          apiUrl: result.apiUrl,
+          apiKey: config.apiKey,
+          apiUrl: config.apiUrl,
         });
-        await client.register(result.token, result.username);
-        submit({ token: result.token }, { action: "/login", method: "post" });
+
+        await client.register(config.token, config.username);
+        setTimeout(() =>
+          submit({ token: config.token }, { action: "/login", method: "post" })
+        );
       } catch (err) {
         invariant(err instanceof Error, "panic");
         setError(err.message);
@@ -64,11 +72,10 @@ export default function Register() {
     };
 
     f();
-  }, [navigate, result, submit]);
+  }, [navigate, config, submit, loaderError]);
 
   return (
     <div className="text-center">
-      <span>{result.error && result.message}</span>
       <span>{error}</span>
     </div>
   );

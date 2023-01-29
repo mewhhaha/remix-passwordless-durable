@@ -1,9 +1,13 @@
 import type { ComponentProps, FunctionComponent } from "react";
 
-export const Button = <AS extends FunctionComponent<any>>({
+export const Button = <
+  AS extends FunctionComponent<any> | keyof JSX.IntrinsicElements = "button"
+>({
   as: As,
   ...props
-}: JSX.IntrinsicElements["button"] & ComponentProps<AS> & { as?: AS }) => {
+}: ([AS] extends [keyof JSX.IntrinsicElements]
+  ? JSX.IntrinsicElements[AS]
+  : ComponentProps<AS>) & { as?: AS }) => {
   const Component = As ?? "button";
 
   return (
@@ -11,7 +15,11 @@ export const Button = <AS extends FunctionComponent<any>>({
       {...props}
       className={[
         "font-['Roboto'] px-4 py-2 border rounded-md border-gray-500 text-center",
-        props.className !== undefined ? props.className : "",
+        "className" in props &&
+        typeof props.className === "string" &&
+        props.className
+          ? props.className
+          : "",
       ].join(" ")}
     />
   );

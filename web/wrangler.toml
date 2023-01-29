@@ -1,3 +1,0 @@
-compatibility_date = "2023-01-21"
-[durable_objects]
-bindings = [{ name = "DO_USER", class_name = "DurableObjectUser" }]

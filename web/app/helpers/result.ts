@@ -1,25 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 
-export const success = <T extends Record<any, any>>(
+export const good = <T extends any>(
   value: T,
   init?: number | ResponseInit | undefined
-) =>
-  json(
-    {
-      ...value,
-      error: false as const,
-    },
-    init
-  );
+) => json<[T, null]>([value, null], init);
 
-export const failure = <T extends Record<any, any>>(
-  value: T,
+export const bad = <T extends any = {}>(
+  err: T = {} as T,
   init?: number | ResponseInit | undefined
-) =>
-  json(
-    {
-      ...value,
-      error: true as const,
-    },
-    init
-  );
+) => json<[null, T]>([null, err], init);

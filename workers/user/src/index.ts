@@ -1,4 +1,9 @@
-import { CallableDurableObject, error, respond } from "dumb-durable-object";
+import {
+  callable,
+  CallableDurableObject,
+  error,
+  respond,
+} from "dumb-durable-object";
 
 const HOUR_IN_MILLISECONDS = 3600000;
 const KEY_DATA = "data";
@@ -17,12 +22,14 @@ export type UserRegister = {
 };
 
 export class DurableObjectUser extends CallableDurableObject {
+  @callable
   async verified(_: Request) {
     const { storage } = this.state;
     const verified = await storage.get<boolean>(KEY_VERIFIED);
     return respond(verified === true);
   }
 
+  @callable
   async register(_: Request, code: string) {
     const { storage } = this.state;
     const r = await storage.get<UserRegister>(KEY_REGISTER);
@@ -40,6 +47,7 @@ export class DurableObjectUser extends CallableDurableObject {
     return respond(data);
   }
 
+  @callable
   async forgotPassword(request: Request) {
     const { storage } = this.state;
     const url = new URL(request.url);
@@ -69,6 +77,7 @@ export class DurableObjectUser extends CallableDurableObject {
     return respond("ok");
   }
 
+  @callable
   async initialize(_: Request, data: UserData) {
     const { storage } = this.state;
     const verified = await storage.get<boolean>(KEY_VERIFIED);

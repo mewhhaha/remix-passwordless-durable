@@ -42,13 +42,14 @@ export const credentialsList = async (
 
 type CredentialsDeleteRequest = {
   CredentialId: string;
+  userId: string;
 };
 
 export const credentialsDelete = async (
   context: AppLoadContext,
   request: CredentialsDeleteRequest
 ) => {
-  await fetch(`${context.AUTH_API}/credentials/list`, {
+  const response = await fetch(`${context.AUTH_API}/credentials/list`, {
     method: "POST",
     body: JSON.stringify(request),
     headers: {
@@ -56,6 +57,8 @@ export const credentialsDelete = async (
       "Content-Type": "application/json",
     },
   });
+
+  return response.text();
 };
 
 export type RegisterTokenRequest = {
@@ -78,7 +81,11 @@ export const registerToken = async (
     },
   });
 
-  return response.text();
+  if (!response.ok) {
+    return [undefined, true] as const;
+  }
+
+  return [await response.text(), false] as const;
 };
 
 export type User = {

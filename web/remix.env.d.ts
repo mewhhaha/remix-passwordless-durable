@@ -4,7 +4,7 @@
 
 import "@remix-run/cloudflare";
 import type { DurableObjectNamespaceIs } from "dumb-durable-object";
-import type { DurableObjectUser } from "user";
+import type { DurableObjectUser } from "workers-user";
 declare module "@remix-run/cloudflare" {
   interface AppLoadContext {
     AUTH_SECRET: string;

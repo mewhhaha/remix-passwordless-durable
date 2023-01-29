@@ -8,7 +8,7 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/cloudflare";
-import { failure, success } from "~/helpers/result";
+import { bad, good } from "~/helpers/result";
 import { signinVerify } from "~/helpers/passwordless";
 import { readForm } from "~/helpers/form";
 
@@ -19,18 +19,18 @@ export async function loader({ context }: LoaderArgs) {
 export async function action({ request, context }: ActionArgs) {
   const { session, commitSession } = await cookieSession(request, context);
 
-  const { error, token } = await readForm(request, ["token"]);
+  const [form, error] = await readForm(request, ["token"]);
   if (error) {
-    return failure({ message: "Missing form data" });
+    return bad({ message: "Missing form data" });
   }
 
-  const result = await signinVerify(context, token);
+  const result = await signinVerify(context, form.token);
   if (!result.success) {
-    return failure({ message: "Login was not successful" });
+    return bad({ message: "Login was not successful" });
   }
 
   session.set("user", JSON.stringify(result));
-  return success(
+  return good(
     {},
     {
       status: 302,
@@ -70,9 +70,9 @@ export default function Login() {
         />
       </div>
 
-      {result?.error && <div className="text-red-500">{result.message}</div>}
+      {result?.[1] && <div className="text-red-500">{result[1].message}</div>}
 
-      <Button htmlType="submit" className="bg-orange-400 text-white">
+      <Button type="submit" className="bg-orange-400 text-white">
         Login
       </Button>
       <Button as={Link} to="/forgot-password">

@@ -1,46 +1,39 @@
 import type { ActionArgs } from "@remix-run/cloudflare";
 import { Form, useActionData } from "@remix-run/react";
 import { Button } from "~/components/Button";
-import type { UserData } from "user";
-import { failure, success } from "~/helpers/result";
+import { bad, good } from "~/helpers/result";
 import { client } from "dumb-durable-object";
 import { readForm } from "~/helpers/form";
 
 export async function action({ request, context }: ActionArgs) {
-  const { error, username, displayname, email } = await readForm(request, [
+  const [form, error] = await readForm(request, [
     "email",
     "username",
     "displayname",
   ]);
 
   if (error) {
-    return failure({ message: "Missing form data" });
+    return bad({ message: "Missing form data" });
   }
 
-  const c = client(request, context.DO_USER, username);
-  const { value: verified } = await c.verified();
+  const c = client(request, context.DO_USER, form.username);
+  const [verified] = await c.verified();
   if (verified) {
-    return failure({
+    return bad({
       message: "Ooops! User is already signed up!",
     });
   }
 
-  const data: UserData = {
-    email,
-    username,
-    displayname,
-  };
-
-  await c.initialize(data);
+  await c.initialize(form);
   await c.forgotPassword();
 
-  return success({ username, email });
+  return good(form);
 }
 
 export default function SignUp() {
   const result = useActionData<typeof action>();
 
-  return result === undefined || result.error ? (
+  return result === undefined || result[1] ? (
     <Form method="post" className="flex flex-col gap-4">
       <div className="flex flex-col">
         <label>Email</label>
@@ -76,14 +69,14 @@ export default function SignUp() {
         />
       </div>
 
-      {result?.error && <div className="text-red-500">{result.message}</div>}
+      {result?.[1] && <div className="text-red-500">{result[1].message}</div>}
 
       <Button className="bg-orange-400 text-white">Sign up</Button>
     </Form>
   ) : (
     <div>
-      An email have been sent to <strong>{result.email}</strong> with a link to
-      set up your credentials
+      An email have been sent to <strong>{result[0].email}</strong> with a link
+      to set up your credentials
     </div>
   );
 }

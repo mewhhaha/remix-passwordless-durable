@@ -1,6 +1,14 @@
 {
   "private": true,
-
+  "scripts": {
+    "dev": "start-server-and-test dev:web http://127.0.0.1:8788/ dev:workers",
+    "dev:web": "pnpm --filter web dev",
+    "dev:workers": "pnpm --filter \"workers-*\" dev"
+  },
+  "devDependencies": {
+    "start-server-and-test": "^1.15.3",
+    "typescript": "5.0.0-beta"
+  },
   "engines": {
     "node": ">=18.13",
     "pnpm": ">=7.25.1"
